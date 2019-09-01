@@ -8,6 +8,8 @@ class ARScene extends HTMLElement {
         this.threeMarkers = {}
         this.renderer = {}
         this.croppedRenderer = {}
+
+        this.cropDimensions = { x: 0, y: 0, w: window.innerWidth, h: window.innerHeight }
     }
 
     connectedCallback() {
@@ -27,7 +29,7 @@ class ARScene extends HTMLElement {
 
         window.ARThreeOnLoad = () => {
             ARController.getUserMediaThreeScene({
-                maxARVideoSize: 640,
+                maxARVideoSize: window.innerWidth,
                 cameraParam: CameraParam,
                 facingMode: 'environment',
 
@@ -62,7 +64,7 @@ class ARScene extends HTMLElement {
     }
 
     drawCroppedImage(src, target) {
-        const c = crop
+        const c = this.cropDimensions
         var ctx = target.getContext('2d');
         ctx.drawImage(src, c.x, c.y, c.w, c.h, 0, 0, target.width, target.height);
     }
@@ -97,7 +99,7 @@ class ARScene extends HTMLElement {
 
     createRenderers(arController) {
         let renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
-        renderer.setSize(640, 480)
+        renderer.setSize(window.innerWidth, window.innerHeight)
         renderer.domElement.setAttribute("id", "arCanvas")
 
         let croppedRenderer = document.createElement("canvas")
@@ -122,9 +124,9 @@ class ARScene extends HTMLElement {
         canvas.width = width
         canvas.height = height
 
-        const videoHeight = 480
-        const videoWidth = 640
-        const videoAspect = videoWidth / videoHeight // Same as 4/3    
+        const videoHeight = height
+        const videoWidth = width
+        const videoAspect = videoWidth / videoHeight // Same as 4/3
         const portrait = ((width / height) < videoAspect)
 
         let x, y, cropWidth, cropHeight
@@ -148,7 +150,7 @@ class ARScene extends HTMLElement {
             y = 0
         }
 
-        crop = { x: x, y: y, w: cropWidth, h: cropHeight }
+        this.cropDimensions = { x: x, y: y, w: cropWidth, h: cropHeight }
     }
 
     set arScene(value) {
@@ -182,12 +184,6 @@ function getWindowSize(orientation) {
 
 function isDesktop() {
     return !(/Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent))
-}
-var crop = {
-    x: 0,
-    y: 0,
-    w: 640,
-    h: 480
 }
 
 customElements.define("ar-scene", ARScene)
